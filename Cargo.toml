@@ -1,0 +1,11 @@
+[package]
+edition = "2024"
+name = "svg-server"
+version = "0.1.0"
+
+[dependencies]
+actix-web = "4.10.2"
+handlebars = { version = "6.3.2", features = ["rust-embed"] }
+rust-embed = "8.6.0"
+serde_json = "1.0.140"
+structopt = "0.3.26"

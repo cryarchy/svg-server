@@ -1,9 +1,10 @@
 mod usage_guide;
 
-use std::{net::SocketAddr, path::PathBuf};
+use std::{net::SocketAddr, path::PathBuf, sync::LazyLock};
 
 use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
 use handlebars::Handlebars;
+use regex::Regex;
 use rust_embed::RustEmbed;
 use structopt::StructOpt;
 use usage_guide::USAGE_GUIDE;
@@ -37,6 +38,32 @@ struct RedirectIndexTo(String);
 #[folder = "templates"]
 struct Assets;
 
+static HEIGHT_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"height\s*=\s*"[^"]*""#).unwrap());
+
+static WIDTH_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"width\s*=\s*"[^"]*""#).unwrap());
+
+fn svg_size_full_width(svg_content: &str) -> Result<String, String> {
+    let svg_start = svg_content
+        .find("<svg")
+        .ok_or("No SVG start found".to_owned())?;
+    let svg_end = svg_content[svg_start..]
+        .find('>')
+        .ok_or("No SVG end found".to_owned())?;
+
+    // Get the full SVG tag line
+    let svg_tag_line = &svg_content[svg_start..svg_start + svg_end + 1];
+    // Remove height attribute
+    let new_svg_tag_line = HEIGHT_RE.replace_all(svg_tag_line, "").to_string();
+
+    // Replace width attribute with 100%
+    let new_svg_tag_line = WIDTH_RE
+        .replace_all(&new_svg_tag_line, "width=\"100%\"")
+        .to_string();
+
+    Ok(svg_content.replace(svg_tag_line, &new_svg_tag_line))
+}
+
 #[get("/")]
 async fn home_redirect(redirect_to: web::Data<RedirectIndexTo>) -> impl Responder {
     // Permanent redirect to /home
@@ -57,7 +84,13 @@ async fn render_svg(
 
     // Read SVG file contents
     let svg_content = match std::fs::read_to_string(&full_svg_path) {
-        Ok(content) => content,
+        Ok(content) => match svg_size_full_width(&content) {
+            Ok(content) => content,
+            Err(e) => {
+                eprintln!("{e}");
+                return HttpResponse::InternalServerError().body(e);
+            }
+        },
         Err(e) => {
             eprintln!("{e}");
             return HttpResponse::InternalServerError().body("Failed to load SVG");

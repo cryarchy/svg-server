@@ -1474,6 +1474,7 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "handlebars",
+ "regex",
  "rust-embed",
  "serde_json",
  "structopt",

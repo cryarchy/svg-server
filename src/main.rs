@@ -68,7 +68,7 @@ fn svg_size_full_width(svg_content: &str) -> Result<String, String> {
 async fn home_redirect(redirect_to: web::Data<RedirectIndexTo>) -> impl Responder {
     // Permanent redirect to /home
     println!("Redirecting / to {}", redirect_to.0);
-    web::redirect("/", redirect_to.0.to_owned()).permanent()
+    web::redirect("/", redirect_to.0.to_owned()).temporary()
 }
 
 #[get("/{page}")]

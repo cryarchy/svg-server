@@ -7,6 +7,30 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet" />
     <title>{{title}}</title>
+    <style>
+        /* Use a more-intuitive box-sizing model */
+        *, *::before, *::after {
+        box-sizing: border-box;
+        }
+
+        /* Remove default margin */
+        * {
+        margin: 0;
+        }
+        
+        body {
+            /* Add accessible line-height */
+            line-height: 1.5;
+            /* Improve text rendering */
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Improve media defaults */
+        svg {
+            display: block;
+            max-width: 100%;
+        }
+    </style>
 </head>
 <body>
     {{{svg_content}}}
